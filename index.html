@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Torrents</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1024px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #007bff;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .controls input {
+            padding: 10px;
+            margin-right: 10px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            background-color: #0056b3;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 10px 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        th.title, td.title {
+            width: 40%;
+        }
+
+        th.magnet, td.magnet {
+            width: 20%;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Search Torrents</h1>
+        <div class="controls">
+            <input type="text" id="query" placeholder="Search query (e.g., Avengers)" />
+            <input type="number" id="limit" placeholder="Number of results" value="5" min="1" />
+            <button id="fetchTorrentsButton">Search</button>
+        </div>
+        <div id="message" class="message"></div>
+        <table id="torrentsTable">
+            <thead>
+                <tr>
+                    <th class="title">Title</th>
+                    <th>Size</th>
+                    <th>Seeds</th>
+                    <th>Peers</th>
+                    <th class="magnet">Magnet</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Results will appear here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.getElementById('fetchTorrentsButton').addEventListener('click', fetchTorrents);
+
+        async function fetchTorrents() {
+            const query = document.getElementById('query').value.trim();
+            const limit = document.getElementById('limit').value.trim();
+            const message = document.getElementById('message');
+            const tableBody = document.getElementById('torrentsTable').getElementsByTagName('tbody')[0];
+            const button = document.getElementById('fetchTorrentsButton');
+
+            tableBody.innerHTML = ''; // Clear table
+            message.innerHTML = '';
+
+            if (!query) {
+                message.textContent = 'Please enter a search query.';
+                return;
+            }
+
+            try {
+                button.disabled = true;
+                button.textContent = 'Searching...';
+                message.innerHTML = '<span style="color:#555;">🔄 A procurar resultados...</span>';
+
+                const response = await fetch(`https://torrent-api-py-nx0x.onrender.com/api/v1/all/search?query=${encodeURIComponent(query)}&limit=${limit}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                message.textContent = '';
+                button.disabled = false;
+                button.textContent = 'Search';
+
+                if (response.ok) {
+                    const result = await response.json();
+                    const torrents = result.data || [];
+
+                    if (torrents.length > 0) {
+                        let shown = 0;
+                        torrents.forEach(torrent => {
+                            if (torrent.seeders && parseInt(torrent.seeders) > 0) {
+                                const row = tableBody.insertRow();
+                                row.innerHTML = `
+                                    <td class="title">${torrent.name || 'N/A'}</td>
+                                    <td>${torrent.size || 'N/A'}</td>
+                                    <td>${torrent.seeders}</td>
+                                    <td>${torrent.leechers || 'N/A'}</td>
+                                    <td class="magnet"><a href="${torrent.magnet || '#'}" target="_blank">📥 Download</a></td>
+                                `;
+                                shown++;
+                            }
+                        });
+
+                        if (shown === 0) {
+                            message.textContent = 'No torrents with active seeders were found.';
+                        }
+
+                    } else {
+                        message.textContent = 'No torrents found.';
+                    }
+                } else {
+                    message.textContent = `Error fetching data: ${response.status} ${response.statusText}`;
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                message.textContent = 'An error occurred. Please try again later.';
+                button.disabled = false;
+                button.textContent = 'Search';
+            }
+        }
+    </script>
+</body>
+</html>
