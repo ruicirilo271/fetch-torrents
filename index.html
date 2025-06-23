@@ -1,190 +1,628 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Torrents</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f4f4f4;
-            color: #333;
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Search Torrents - Advanced</title>
+<style>
+  /* RESET & BASE */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f4f4f4;
+    color: #333;
+    margin: 0;
+  }
+  .container {
+    max-width: 1024px;
+    margin: 0 auto;
+  }
+  h1 {
+    color: #007bff;
+    margin-bottom: 1rem;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .controls input, .controls select, .controls button {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+  .controls input[type="number"], .controls select {
+    width: 120px;
+  }
+  .controls input[type="text"] {
+    flex: 1 1 200px;
+  }
+  .controls button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    min-width: 100px;
+  }
+  .controls button:hover {
+    background-color: #0056b3;
+  }
 
-        .container {
-            max-width: 1024px;
-            margin: 0 auto;
-        }
+  #message {
+    margin-top: 10px;
+    font-weight: bold;
+    min-height: 24px;
+  }
 
-        h1 {
-            color: #007bff;
-        }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    font-size: 14px;
+  }
+  th, td {
+    padding: 10px 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+  }
+  th {
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    user-select: none;
+  }
+  th.title, td.title {
+    width: 40%;
+  }
+  th.magnet, td.magnet {
+    width: 20%;
+  }
+  a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  /* Seeders badges */
+  .seeders-badge {
+    display: inline-block;
+    padding: 3px 6px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: white;
+    font-weight: bold;
+    min-width: 40px;
+    text-align: center;
+  }
+  .badge-high {
+    background: gold;
+    color: #444;
+  }
+  .badge-medium {
+    background: silver;
+    color: #444;
+  }
+  .badge-low {
+    background: peru;
+  }
+  .badge-few {
+    background: #e07b7b; /* vermelho claro */
+    color: white;
+    font-weight: bold;
+  }
 
-        .controls {
-            margin-bottom: 20px;
-        }
+  /* Favorite star button */
+  .fav-btn {
+    cursor: pointer;
+    font-size: 18px;
+    color: #ccc;
+    user-select: none;
+    transition: color 0.3s ease;
+  }
+  .fav-btn.favorited {
+    color: gold;
+  }
+  .fav-btn:hover {
+    color: orange;
+  }
 
-        .controls input {
-            padding: 10px;
-            margin-right: 10px;
-            width: 200px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
+  /* Magnet copy button */
+  .copy-btn {
+    cursor: pointer;
+    margin-left: 6px;
+    font-size: 16px;
+    color: #007bff;
+    user-select: none;
+  }
+  .copy-btn:hover {
+    color: #0056b3;
+  }
 
-        .controls button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+  /* Pagination */
+  .pagination {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+  .pagination button {
+    padding: 8px 14px;
+    border: 1px solid #007bff;
+    background: white;
+    color: #007bff;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  .pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .pagination button:hover:not(:disabled) {
+    background: #007bff;
+    color: white;
+  }
 
-        .controls button:hover {
-            background-color: #0056b3;
-        }
-
-        .message {
-            margin-top: 20px;
-            font-weight: bold;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        th, td {
-            padding: 10px 8px;
-            border: 1px solid #ddd;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        th {
-            background-color: #007bff;
-            color: white;
-        }
-
-        th.title, td.title {
-            width: 40%;
-        }
-
-        th.magnet, td.magnet {
-            width: 20%;
-        }
-
-        a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+  /* Responsive */
+  @media (max-width: 700px) {
+    th.title, td.title {
+      width: auto;
+    }
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+    thead tr {
+      display: none;
+    }
+    tr {
+      margin-bottom: 15px;
+      border-bottom: 2px solid #ddd;
+    }
+    td {
+      border: none;
+      position: relative;
+      padding-left: 50%;
+      white-space: normal;
+    }
+    td:before {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 45%;
+      white-space: nowrap;
+      font-weight: bold;
+      color: #555;
+    }
+    td.title:before { content: "Title"; }
+    td.size:before { content: "Size"; }
+    td.seeders:before { content: "Seeds"; }
+    td.leechers:before { content: "Peers"; }
+    td.year:before { content: "Year"; }
+    td.magnet:before { content: "Magnet"; }
+    td.fav:before { content: "Favorite"; }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>🔍 Search Torrents</h1>
-        <div class="controls">
-            <input type="text" id="query" placeholder="Search query (e.g., Avengers)" />
-            <input type="number" id="limit" placeholder="Number of results" value="5" min="1" />
-            <button id="fetchTorrentsButton">Search</button>
-        </div>
-        <div id="message" class="message"></div>
-        <table id="torrentsTable">
-            <thead>
-                <tr>
-                    <th class="title">Title</th>
-                    <th>Size</th>
-                    <th>Seeds</th>
-                    <th>Peers</th>
-                    <th class="magnet">Magnet</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Results will appear here -->
-            </tbody>
-        </table>
-    </div>
+<div class="container">
+  <h1>🔍 Search Torrents - Advanced</h1>
 
-    <script>
-        document.getElementById('fetchTorrentsButton').addEventListener('click', fetchTorrents);
+  <div class="controls">
+    <input type="text" id="query" placeholder="Search query (e.g., Avengers)" />
+    <input type="number" id="limit" placeholder="Results per page" value="5" min="1" max="50" />
+    <input type="number" id="minSeeders" placeholder="Min Seeders" value="1" min="0" />
+    <input type="number" id="minSize" placeholder="Min Size MB" value="0" min="0" />
+    <input type="number" id="minYear" placeholder="Min Year" min="1900" max="2100" />
+    <button id="searchBtn">Search</button>
+  </div>
 
-        async function fetchTorrents() {
-            const query = document.getElementById('query').value.trim();
-            const limit = document.getElementById('limit').value.trim();
-            const message = document.getElementById('message');
-            const tableBody = document.getElementById('torrentsTable').getElementsByTagName('tbody')[0];
-            const button = document.getElementById('fetchTorrentsButton');
+  <div id="message"></div>
 
-            tableBody.innerHTML = ''; // Clear table
-            message.innerHTML = '';
+  <table id="resultsTable" aria-label="Torrents search results" role="grid">
+    <thead>
+      <tr>
+        <th class="fav" title="Favorite"></th>
+        <th class="title" data-sort-key="name" scope="col" tabindex="0" aria-sort="none" role="columnheader">Title (Year)</th>
+        <th class="size" data-sort-key="size_bytes" scope="col" tabindex="0" aria-sort="none" role="columnheader">Size</th>
+        <th class="seeders" data-sort-key="seeders" scope="col" tabindex="0" aria-sort="none" role="columnheader">Seeds</th>
+        <th class="leechers" data-sort-key="leechers" scope="col" tabindex="0" aria-sort="none" role="columnheader">Peers</th>
+        <th class="magnet" scope="col">Magnet</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-            if (!query) {
-                message.textContent = 'Please enter a search query.';
-                return;
-            }
+  <div class="pagination">
+    <button id="prevPageBtn" disabled>Previous</button>
+    <span id="pageInfo" aria-live="polite" style="padding:0 10px;"></span>
+    <button id="nextPageBtn" disabled>Next</button>
+  </div>
+</div>
 
-            try {
-                button.disabled = true;
-                button.textContent = 'Searching...';
-                message.innerHTML = '<span style="color:#555;">🔄 A procurar resultados...</span>';
+<script>
+(() => {
+  const API_URL = 'https://torrent-api-py-nx0x.onrender.com/api/v1/all/search';
 
-                const response = await fetch(`https://torrent-api-py-nx0x.onrender.com/api/v1/all/search?query=${encodeURIComponent(query)}&limit=${limit}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
+  // Elements
+  const queryInput = document.getElementById('query');
+  const limitInput = document.getElementById('limit');
+  const minSeedersInput = document.getElementById('minSeeders');
+  const minSizeInput = document.getElementById('minSize');
+  const minYearInput = document.getElementById('minYear');
+  const searchBtn = document.getElementById('searchBtn');
+  const messageDiv = document.getElementById('message');
+  const tableBody = document.querySelector('#resultsTable tbody');
+  const prevPageBtn = document.getElementById('prevPageBtn');
+  const nextPageBtn = document.getElementById('nextPageBtn');
+  const pageInfoSpan = document.getElementById('pageInfo');
+  const tableHeaders = document.querySelectorAll('#resultsTable thead th[data-sort-key]');
 
-                message.textContent = '';
-                button.disabled = false;
-                button.textContent = 'Search';
+  let allTorrents = [];
+  let filteredTorrents = [];
+  let currentPage = 1;
+  let resultsPerPage = 5;
+  let currentSort = { key: null, ascending: true };
 
-                if (response.ok) {
-                    const result = await response.json();
-                    const torrents = result.data || [];
+  // LocalStorage favorites key
+  const FAVORITES_KEY = 'torrentFavorites';
 
-                    if (torrents.length > 0) {
-                        let shown = 0;
-                        torrents.forEach(torrent => {
-                            if (torrent.seeders && parseInt(torrent.seeders) > 0) {
-                                const row = tableBody.insertRow();
-                                row.innerHTML = `
-                                    <td class="title">${torrent.name || 'N/A'}</td>
-                                    <td>${torrent.size || 'N/A'}</td>
-                                    <td>${torrent.seeders}</td>
-                                    <td>${torrent.leechers || 'N/A'}</td>
-                                    <td class="magnet"><a href="${torrent.magnet || '#'}" target="_blank">📥 Download</a></td>
-                                `;
-                                shown++;
-                            }
-                        });
+  // Helpers
 
-                        if (shown === 0) {
-                            message.textContent = 'No torrents with active seeders were found.';
-                        }
+  // Parse size strings like "1.4 GB", "700 MB" to bytes for sorting/filter
+  function sizeStrToBytes(sizeStr) {
+    if (!sizeStr) return 0;
+    const regex = /([\d.]+)\s*(GB|MB|KB|B)/i;
+    const match = sizeStr.match(regex);
+    if (!match) return 0;
+    let size = parseFloat(match[1]);
+    const unit = match[2].toUpperCase();
+    switch(unit) {
+      case 'GB': return size * 1024 * 1024 * 1024;
+      case 'MB': return size * 1024 * 1024;
+      case 'KB': return size * 1024;
+      case 'B': return size;
+      default: return 0;
+    }
+  }
 
-                    } else {
-                        message.textContent = 'No torrents found.';
-                    }
-                } else {
-                    message.textContent = `Error fetching data: ${response.status} ${response.statusText}`;
-                }
-            } catch (error) {
-                console.error('Fetch error:', error);
-                message.textContent = 'An error occurred. Please try again later.';
-                button.disabled = false;
-                button.textContent = 'Search';
-            }
-        }
-    </script>
+  // Format bytes to human readable
+  function bytesToSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
+  }
+
+  // Load favorites from localStorage
+  function loadFavorites() {
+    try {
+      const fav = JSON.parse(localStorage.getItem(FAVORITES_KEY));
+      return Array.isArray(fav) ? fav : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Save favorites to localStorage
+  function saveFavorites(favs) {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favs));
+  }
+
+  // Check if torrent is favorite
+  function isFavorite(magnet) {
+    const favs = loadFavorites();
+    return favs.includes(magnet);
+  }
+
+  // Toggle favorite
+  function toggleFavorite(magnet, btn) {
+    let favs = loadFavorites();
+    if (favs.includes(magnet)) {
+      favs = favs.filter(m => m !== magnet);
+      btn.classList.remove('favorited');
+    } else {
+      favs.push(magnet);
+      btn.classList.add('favorited');
+    }
+    saveFavorites(favs);
+  }
+
+  // Copy magnet link to clipboard with feedback
+  async function copyToClipboard(text, btn) {
+    try {
+      await navigator.clipboard.writeText(text);
+      btn.textContent = '✅';
+      setTimeout(() => btn.textContent = '📋', 1500);
+    } catch {
+      alert('Failed to copy magnet link.');
+    }
+  }
+
+  // Format seeders with badges
+  function seedersBadge(seedCount) {
+    if (seedCount >= 1000) return `<span class="seeders-badge badge-high" title="Popular">${seedCount}</span>`;
+    if (seedCount >= 100) return `<span class="seeders-badge badge-medium" title="Frequent">${seedCount}</span>`;
+    if (seedCount >= 10) return `<span class="seeders-badge badge-low" title="Moderate">${seedCount}</span>`;
+    if (seedCount > 0 && seedCount < 5) return `<span class="seeders-badge badge-few" title="Few seeders">${seedCount}</span>`;
+    return `<span>${seedCount}</span>`;
+  }
+
+  // Parse year from name if possible (ex: "Movie Title (2023)" or "Movie.Title.2023")
+  function extractYear(name) {
+    if (!name) return null;
+    const yearMatch = name.match(/\b(19|20)\d{2}\b/);
+    return yearMatch ? yearMatch[0] : null;
+  }
+
+  // Sanitize text for tooltip, basic
+  function sanitize(text) {
+    if (!text) return '';
+    return text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  // Render one row of torrent
+  function renderRow(torrent) {
+    const magnet = torrent.magnet || '';
+    const name = torrent.name || 'N/A';
+    const year = torrent.year || extractYear(name) || 'N/A';
+    const sizeStr = torrent.size || 'N/A';
+    const sizeBytes = sizeStrToBytes(sizeStr);
+    const seeders = parseInt(torrent.seeders) || 0;
+    const leechers = torrent.leechers || 'N/A';
+    const description = torrent.description || torrent.summary || '';
+
+    // Favorite button
+    const isFav = isFavorite(magnet);
+    const favBtn = `<span role="button" tabindex="0" aria-label="${isFav ? 'Remove from favorites' : 'Add to favorites'}" class="fav-btn${isFav ? ' favorited' : ''}" data-magnet="${magnet}">&#9733;</span>`;
+
+    // Tooltip for title (description, truncated)
+    const tooltip = description ? `title="${sanitize(description.length > 200 ? description.slice(0, 200) + '...' : description)}"` : '';
+
+    // Copy magnet button
+    const copyBtn = `<span role="button" tabindex="0" aria-label="Copy magnet link" class="copy-btn" data-magnet="${magnet}">📋</span>`;
+
+    return `
+      <tr>
+        <td class="fav">${favBtn}</td>
+        <td class="title" ${tooltip}>${name} (${year})</td>
+        <td class="size" data-bytes="${sizeBytes}">${sizeStr}</td>
+        <td class="seeders">${seedersBadge(seeders)}</td>
+        <td class="leechers">${leechers}</td>
+        <td class="magnet">
+          <a href="${magnet}" target="_blank" rel="noopener noreferrer" aria-label="Download magnet link for ${name}">📥 Download</a>
+          ${copyBtn}
+        </td>
+      </tr>
+    `;
+  }
+
+  // Apply filters on allTorrents
+  function applyFilters() {
+    const minSeeders = parseInt(minSeedersInput.value) || 0;
+    const minSizeMB = parseInt(minSizeInput.value) || 0;
+    const minYear = parseInt(minYearInput.value) || 0;
+
+    filteredTorrents = allTorrents.filter(t => {
+      const seeders = parseInt(t.seeders) || 0;
+      const sizeBytes = sizeStrToBytes(t.size || '');
+      const year = t.year || extractYear(t.name) || 0;
+
+      return (
+        seeders >= minSeeders &&
+        (sizeBytes / (1024 * 1024)) >= minSizeMB &&
+        year >= minYear
+      );
+    });
+  }
+
+  // Apply sorting on filteredTorrents
+  function applySorting() {
+    if (!currentSort.key) return;
+
+    filteredTorrents.sort((a, b) => {
+      let valA, valB;
+      switch (currentSort.key) {
+        case 'name':
+          valA = (a.name || '').toLowerCase();
+          valB = (b.name || '').toLowerCase();
+          break;
+        case 'size_bytes':
+          valA = sizeStrToBytes(a.size);
+          valB = sizeStrToBytes(b.size);
+          break;
+        case 'seeders':
+          valA = parseInt(a.seeders) || 0;
+          valB = parseInt(b.seeders) || 0;
+          break;
+        case 'leechers':
+          valA = parseInt(a.leechers) || 0;
+          valB = parseInt(b.leechers) || 0;
+          break;
+        case 'year':
+          valA = a.year || extractYear(a.name) || 0;
+          valB = b.year || extractYear(b.name) || 0;
+          break;
+        default:
+          valA = 0;
+          valB = 0;
+      }
+      if (valA < valB) return currentSort.ascending ? -1 : 1;
+      if (valA > valB) return currentSort.ascending ? 1 : -1;
+      return 0;
+    });
+  }
+
+  // Render current page
+  function renderPage() {
+    tableBody.innerHTML = '';
+    const total = filteredTorrents.length;
+    resultsPerPage = parseInt(limitInput.value) || 5;
+    const start = (currentPage -1) * resultsPerPage;
+    const end = start + resultsPerPage;
+    const pageItems = filteredTorrents.slice(start, end);
+
+    if (pageItems.length === 0) {
+      messageDiv.textContent = 'No torrents found for the current filters.';
+      pageInfoSpan.textContent = '';
+      prevPageBtn.disabled = true;
+      nextPageBtn.disabled = true;
+      return;
+    }
+    messageDiv.textContent = '';
+
+    pageItems.forEach(torrent => {
+      tableBody.insertAdjacentHTML('beforeend', renderRow(torrent));
+    });
+
+    // Update pagination buttons and info
+    pageInfoSpan.textContent = `Page ${currentPage} of ${Math.ceil(total / resultsPerPage)}`;
+    prevPageBtn.disabled = currentPage === 1;
+    nextPageBtn.disabled = currentPage >= Math.ceil(total / resultsPerPage);
+
+    // Attach events to fav and copy buttons on this page
+    attachFavCopyEvents();
+  }
+
+  // Attach favorite and copy button event handlers
+  function attachFavCopyEvents() {
+    document.querySelectorAll('.fav-btn').forEach(btn => {
+      btn.onclick = () => toggleFavorite(btn.dataset.magnet, btn);
+      btn.onkeypress = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFavorite(btn.dataset.magnet, btn); } };
+    });
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.onclick = () => copyToClipboard(btn.dataset.magnet, btn);
+      btn.onkeypress = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyToClipboard(btn.dataset.magnet, btn); } };
+    });
+  }
+
+  // Fetch data from API and initialize
+  async function fetchTorrents() {
+    const query = queryInput.value.trim();
+    if (!query) {
+      messageDiv.textContent = 'Please enter a search query.';
+      return;
+    }
+
+    messageDiv.innerHTML = '🔄 Searching torrents...';
+    searchBtn.disabled = true;
+    currentPage = 1;
+
+    try {
+      const resp = await fetch(`${API_URL}?query=${encodeURIComponent(query)}&limit=100`, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!resp.ok) {
+        messageDiv.textContent = `Error fetching data: ${resp.status} ${resp.statusText}`;
+        searchBtn.disabled = false;
+        return;
+      }
+
+      const data = await resp.json();
+      allTorrents = data.data || [];
+
+      if (allTorrents.length === 0) {
+        messageDiv.textContent = 'No torrents found.';
+        tableBody.innerHTML = '';
+        pageInfoSpan.textContent = '';
+        prevPageBtn.disabled = true;
+        nextPageBtn.disabled = true;
+        searchBtn.disabled = false;
+        return;
+      }
+
+      applyFilters();
+      applySorting();
+      renderPage();
+      messageDiv.textContent = '';
+    } catch (err) {
+      console.error(err);
+      messageDiv.textContent = 'An error occurred. Please try again later.';
+    } finally {
+      searchBtn.disabled = false;
+    }
+  }
+
+  // Sorting header click handler
+  function onHeaderClick(e) {
+    const th = e.currentTarget;
+    const key = th.dataset.sortKey;
+    if (!key) return;
+
+    if (currentSort.key === key) {
+      currentSort.ascending = !currentSort.ascending;
+    } else {
+      currentSort.key = key;
+      currentSort.ascending = true;
+    }
+
+    // Update ARIA sort attributes and header styles
+    tableHeaders.forEach(header => {
+      if (header === th) {
+        header.setAttribute('aria-sort', currentSort.ascending ? 'ascending' : 'descending');
+      } else {
+        header.setAttribute('aria-sort', 'none');
+      }
+    });
+
+    applySorting();
+    renderPage();
+  }
+
+  // Pagination buttons handlers
+  prevPageBtn.onclick = () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderPage();
+    }
+  };
+  nextPageBtn.onclick = () => {
+    if (currentPage < Math.ceil(filteredTorrents.length / resultsPerPage)) {
+      currentPage++;
+      renderPage();
+    }
+  };
+
+  // Filters input change handlers (reapply filters, reset to page 1)
+  [minSeedersInput, minSizeInput, minYearInput].forEach(input => {
+    input.addEventListener('input', () => {
+      currentPage = 1;
+      applyFilters();
+      applySorting();
+      renderPage();
+    });
+  });
+
+  // Sorting headers event listeners
+  tableHeaders.forEach(th => {
+    th.addEventListener('click', onHeaderClick);
+    th.addEventListener('keypress', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onHeaderClick(e);
+      }
+    });
+  });
+
+  // Search button click
+  searchBtn.addEventListener('click', fetchTorrents);
+
+  // Enable pressing Enter in query input to search
+  queryInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      fetchTorrents();
+    }
+  });
+})();
+</script>
 </body>
 </html>
+
